@@ -517,7 +517,15 @@ class Document extends Model
 
     public function getTemplatePathAttribute($value = null)
     {
-        return $value ?: 'sales.invoices.print_' . setting('invoice.template');
+        if (! empty($value) && view()->exists($value)) {
+            return $value;
+        }
+
+        if (! empty($this->template) && view()->exists('sales.invoices.print_' . $this->template)) {
+            return 'sales.invoices.print_' . $this->template;
+        }
+
+        return 'sales.invoices.print_' . setting('invoice.template');
     }
 
     public function getContactLocationAttribute()
