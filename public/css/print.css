@@ -600,6 +600,8 @@ html[dir="rtl"] .rtl\:text-right {
 
 .lines .quantity {
     width: 10%;
+    border-left: initial !important;
+    border-right: initial !important;
 }
 
 html[dir="ltr"] .lines .quantity {
@@ -612,6 +614,8 @@ html[dir="rtl"] .lines .quantity {
 
 .lines .price {
     width: 20%;
+    border-left: initial !important;
+    border-right: initial !important;
 }
 
 html[dir="ltr"] .lines .price {
@@ -1062,3 +1066,58 @@ html[dir="rtl"] .print-heading {
         padding: 1.5rem 1.5rem;
     }
 }
+
+/* RTL table column mirror: DomPDF-only (DomPDF does not support @supports, so it applies these) */
+html[dir="rtl"] .lines,
+html[dir="rtl"] .modern-lines,
+html[dir="rtl"] .c-lines {
+    transform: scaleX(-1);
+    width: 100% !important;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+html[dir="rtl"] .lines td,
+html[dir="rtl"] .lines th,
+html[dir="rtl"] .modern-lines td,
+html[dir="rtl"] .modern-lines th,
+html[dir="rtl"] .c-lines td,
+html[dir="rtl"] .c-lines th {
+    transform: scaleX(-1);
+    border-left: 0 !important;
+    border-right: 0 !important;
+}
+
+/* Browser override: reset transform — browser handles RTL column order natively via direction:rtl */
+@supports (display: flex) {
+    html[dir="rtl"] .lines,
+    html[dir="rtl"] .modern-lines,
+    html[dir="rtl"] .c-lines {
+        transform: scaleX(1);
+        table-layout: auto;
+        border-collapse: collapse;
+        border-spacing: unset;
+    }
+
+    html[dir="rtl"] .lines td,
+    html[dir="rtl"] .lines th,
+    html[dir="rtl"] .modern-lines td,
+    html[dir="rtl"] .modern-lines th,
+    html[dir="rtl"] .c-lines td,
+    html[dir="rtl"] .c-lines th {
+        transform: scaleX(1);
+        border-left: initial !important;
+        border-right: initial !important;
+    }
+}
+
+/* template table border radius control */
+html[dir="rtl"] .lines-radius-border thead td:first-child {
+    border-radius: 0px 10px 10px 0px;
+}
+
+html[dir="rtl"] .lines-radius-border thead td:last-child {
+    border-radius: 10px 0px 0px 10px;
+}
+/* template table border radius control */
