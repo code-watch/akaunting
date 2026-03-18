@@ -1074,8 +1074,10 @@ html[dir="rtl"] .c-lines {
     transform: scaleX(-1);
     width: 100% !important;
     table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
+}
+
+html[dir="rtl"] .font-semibold {
+    font-weight: unset;
 }
 
 html[dir="rtl"] .lines td,
@@ -1085,19 +1087,25 @@ html[dir="rtl"] .modern-lines th,
 html[dir="rtl"] .c-lines td,
 html[dir="rtl"] .c-lines th {
     transform: scaleX(-1);
-    border-left: 0 !important;
-    border-right: 0 !important;
 }
 
-/* Browser override: reset transform — browser handles RTL column order natively via direction:rtl */
+/* Browser override: direction:rtl handles column order natively; restore original column widths */
 @supports (display: flex) {
     html[dir="rtl"] .lines,
     html[dir="rtl"] .modern-lines,
     html[dir="rtl"] .c-lines {
         transform: scaleX(1);
         table-layout: auto;
-        border-collapse: collapse;
-        border-spacing: unset;
+    }
+
+    html[dir="rtl"] .font-semibold {
+        font-weight: 600;
+    }
+
+    html[dir="rtl"] .lines .item,
+    html[dir="rtl"] .modern-lines .item,
+    html[dir="rtl"] .c-lines .item {
+        width: 40%;
     }
 
     html[dir="rtl"] .lines td,
@@ -1107,8 +1115,6 @@ html[dir="rtl"] .c-lines th {
     html[dir="rtl"] .c-lines td,
     html[dir="rtl"] .c-lines th {
         transform: scaleX(1);
-        border-left: initial !important;
-        border-right: initial !important;
     }
 }
 
