@@ -105,6 +105,48 @@ class DocumentTransactionsTest extends FeatureTestCase
         ]));
     }
 
+    /**
+     * Regression test for M-1: convertBetween() sentinel bug.
+     *
+     * When $from_code == $to_code but both differ from the default currency,
+     * the old code passed $from_code as the $default sentinel to convertFromDefault().
+     * This triggered an early-return shortcut inside convert() that skipped the
+     * rate multiplication and returned the intermediate default-currency amount
+     * as if it were already in the destination currency.
+     *
+     * Scenario: default=TRY, bill=USD rate=2.0, payment=USD rate=1.0
+     * Bill amount: 100 USD = 200 TRY (at rate 2.0)
+     * Payment: 50 USD at rate 1.0 = 50 TRY
+     * Converted to USD (bill currency): 50 TRY × 1.0 = 50 USD → partial payment
+     *
+     * Buggy behaviour: convertBetween returned 50 TRY treated as 50 USD, which
+     * was compared against 100 USD → partial (correct result by accident here).
+     * The real breakage: when paying the full amount at a worse rate the converted
+     * value exceeded the balance, or at a better rate it fell short due to wrong math.
+     */
+    public function testItShouldCorrectlyConvertSameCurrencyWithDifferentRates(): void
+    {
+        // Bill: 100 USD created at rate 2.0 (1 USD = 2 TRY)
+        $bill = $this->createBill('USD', 2.0);
+
+        // Payment: same currency (USD) but at rate 1.0 (1 USD = 1 TRY).
+        // Converted: 100 USD at rate 1.0 → 100 TRY → 100 TRY ÷ 1.0 = 100 USD.
+        // This should fully pay the bill.
+        $transaction = $this->dispatch(new CreateBankingDocumentTransaction($bill, [
+            'amount'        => $bill->amount,
+            'currency_code' => 'USD',
+            'currency_rate' => 1.0,
+            'type'          => 'expense',
+        ]));
+
+        $bill->refresh();
+
+        // Before the fix, convertBetween returned the TRY intermediate amount
+        // (200) instead of the correct USD value (100), which broke the comparison.
+        $this->assertSame('paid', $bill->status);
+        $this->assertNotNull($transaction->id);
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
