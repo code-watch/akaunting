@@ -23,6 +23,10 @@ class DuplicateDocument extends Job
             $this->clone = $this->model->duplicate();
         });
 
+        if (! $this->clone instanceof Document) {
+            throw new \RuntimeException('DuplicateDocument: duplicate() did not return a Document.');
+        }
+
         event(new DocumentCreated($this->clone, request()));
 
         return $this->clone;

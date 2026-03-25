@@ -158,7 +158,9 @@ class CreateCompany extends Job implements HasOwner, HasSource, ShouldCreate
 
         $account = Account::where('company_id', $this->model->id)->first();
 
-        $account->currency_code = $currency_code;
-        $account->save();
+        if ($account) {
+            $account->currency_code = $currency_code;
+            $account->save();
+        }
     }
 }
