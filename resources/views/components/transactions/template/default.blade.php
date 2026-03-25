@@ -25,7 +25,7 @@
                     @endif
 
                     @if (! $hideCompanyAddress)
-                        <p>{!! (setting('company.address')) !!}</p>
+                        <p><x-nl2br :value="setting('company.address')" /></p>
                     @endif
 
                     @if (! $hideCompanyTaxNumber)
@@ -161,7 +161,7 @@
 
                 <td valign="top" class="border-bottom-dashed-black" style="width:70%; margin: 0px; padding: 8px 0 0 0; font-size: 12px;">
                     <p style="font-size:12px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin: 0;">
-                        {!! nl2br($transaction->description) !!}
+                        <x-nl2br :value="$transaction->description" />
                     </p>
                 </td>
             </tr>
@@ -214,7 +214,7 @@
                     </td>
 
                     <td class="border-bottom-dashed-black" style="width:70%; margin: 0px; padding: 8px 0 0 0; font-size: 12px;">
-                        {!! nl2br($transaction->contact->address) !!}
+                        <x-nl2br :value="$transaction->contact->address" />
                     </td>
                 </tr>
             @endif
