@@ -4,6 +4,7 @@ namespace App\Jobs\Document;
 
 use App\Abstracts\Job;
 use App\Events\Document\DocumentCreated;
+use App\Events\Document\DocumentDuplicating;
 use App\Models\Document\Document;
 
 class DuplicateDocument extends Job
@@ -19,6 +20,8 @@ class DuplicateDocument extends Job
 
     public function handle(): Document
     {
+        event(new DocumentDuplicating($this->model));
+
         \DB::transaction(function () {
             $this->clone = $this->model->duplicate();
         });
