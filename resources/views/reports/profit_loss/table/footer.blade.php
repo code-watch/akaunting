@@ -1,4 +1,11 @@
-@php $grand_total = array_sum($class->footer_totals[$table_key]); @endphp
+@php
+    $totals = array_replace(
+        array_fill_keys($class->dates ?? [], 0),
+        $class->footer_totals[$table_key] ?? []
+    );
+
+    $grand_total = array_sum($totals);
+@endphp
 
 <tfoot>
     <tr>
@@ -6,7 +13,7 @@
             {{ trans_choice('general.totals', 1) }}
         </td>
 
-        @foreach($class->footer_totals[$table_key] as $total)
+        @foreach($totals as $total)
         <td class="{{ $class->column_value_width }} py-4 ltr:text-right rtl:text-left text-black-400 font-medium text-xs print-alignment">
             <x-money :amount="$total" />
         </td>

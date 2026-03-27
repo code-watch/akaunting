@@ -147,10 +147,47 @@ trait SearchString
             array_keys(config('search-string.default.columns', [])),
         ));
 
+        // Collect key aliases from column configs.
+        // A 'key' may be a plain string alias (e.g. 'invoiced_at') or a regex
+        // pattern (e.g. '/^(invoiced_at|billed_at)$/').  Plain aliases are
+        // merged into $valid_columns; regex patterns are kept separately and
+        // tested with preg_match inside the callback below.
+        $key_patterns = [];
+
+        foreach ($model_config_columns as $column_config) {
+            if (! is_array($column_config) || ! isset($column_config['key'])) {
+                continue;
+            }
+
+            $key = $column_config['key'];
+
+            if (is_string($key) && strlen($key) >= 2 && $key[0] === '/' && $key[-1] === '/') {
+                $key_patterns[] = $key;
+            } elseif (is_string($key)) {
+                $valid_columns[] = $key;
+            }
+        }
+
+        $valid_columns = array_unique($valid_columns);
+
         // Match optional "not " prefix + key + operator + value (quoted or unquoted)
         $input = preg_replace_callback(
             pattern: '/\b(?:not\s+)?(\w+)\s*(?:>=|<=|>|<|=|:)\s*(?:"[^"]*"|\S+)/',
-            callback: fn (array $matches) => in_array($matches[1], $valid_columns) ? $matches[0] : '',
+            callback: function (array $matches) use ($valid_columns, $key_patterns): string {
+                $token = $matches[1];
+
+                if (in_array($token, $valid_columns, strict: true)) {
+                    return $matches[0];
+                }
+
+                foreach ($key_patterns as $pattern) {
+                    if (preg_match($pattern, $token)) {
+                        return $matches[0];
+                    }
+                }
+
+                return '';
+            },
             subject: $input,
         );
 

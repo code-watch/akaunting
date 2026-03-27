@@ -43,7 +43,7 @@
                                     <div class="ltr:ml-2 rtl:mr-2">
                                         <h2 class="mb-1">
                                             <x-link.hover group-hover>
-                                                {!! $report->name !!}
+                                                {{ $report->name }}
                                             </x-link.hover>
                                         </h2>
 

@@ -65,8 +65,8 @@ class AddIncomeExpenseCategories extends Listener
     {
         if (
             empty($event->class)
-            || empty($event->class->model->settings->group)
-            || ($event->class->model->settings->group != 'category')
+            || empty($event->class->getGroup())
+            || ($event->class->getGroup() != 'category')
         ) {
             return;
         }
