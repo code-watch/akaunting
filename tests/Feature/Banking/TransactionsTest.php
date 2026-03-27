@@ -55,6 +55,22 @@ class TransactionsTest extends FeatureTestCase
         $this->assertDatabaseHas('transactions', $request);
     }
 
+    public function testItShouldCreateTransactionWithIsoDateThroughApi()
+    {
+        $request = $this->getRequest();
+        $request['paid_at'] = '2025-12-22 00:00:00';
+
+        $this->withHeaders([
+                'Authorization' => 'Basic ' . base64_encode('test@company.com:123456'),
+            ])
+            ->postJson(route('api.transactions.store'), $request)
+            ->assertStatus(201);
+
+        $transaction = Transaction::where('number', $request['number'])->firstOrFail();
+
+        $this->assertSame('2025-12-22', $transaction->paid_at->format('Y-m-d'));
+    }
+
     public function testItShouldCreateTransactionWithRecurring()
     {
         $request = $this->getRequest(true);

@@ -59,6 +59,24 @@ class InvoicesTest extends FeatureTestCase
         ]);
     }
 
+    public function testItShouldCreateInvoiceWithIsoDatesFromWebForm()
+    {
+        $request = $this->getRequest();
+        $request['issued_at'] = '2025-12-22 00:00:00';
+        $request['due_at'] = '2025-12-29 00:00:00';
+
+        $this->loginAs()
+            ->post(route('invoices.store'), $request)
+            ->assertStatus(200);
+
+        $this->assertFlashLevel('success');
+
+        $document = \App\Models\Document\Document::where('document_number', $request['document_number'])->firstOrFail();
+
+        $this->assertSame('2025-12-22', $document->issued_at->format('Y-m-d'));
+        $this->assertSame('2025-12-29', $document->due_at->format('Y-m-d'));
+    }
+
     public function testItShouldCreateInvoiceWithAttachment()
     {
         Storage::fake('uploads');
