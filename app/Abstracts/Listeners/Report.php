@@ -41,8 +41,8 @@ abstract class Report
         $this->fireEvent(\App\Events\Report\SkipRowsShowing::class, $fire_event, $fire_group);
 
         return $this->skipThisClass($event)
-                || empty($event->class->model->settings->group)
-                || ($event->class->model->settings->group != $group);
+                || empty($event->class->getGroup())
+                || ($event->class->getGroup() != $group);
     }
 
     public function setDateFilter($event)
@@ -317,7 +317,7 @@ abstract class Report
         $period = $this->getSearchStringValue('period');
 
         if (empty($period)) {
-            $period = $event->class->getSetting('period');
+            $period = $event->class->getPeriod();
         }
 
         return $this->getPeriodicDate($date, $period, $event->class->year);

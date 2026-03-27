@@ -73,7 +73,7 @@ class DiscountSummary extends Report
     {
         event(new TotalCalculating($this, $items, $date_field, $check_type, $table, $with_tax));
 
-        $group_field = $this->getSetting('group') . '_id';
+        $group_field = $this->getGroup() . '_id';
 
         foreach ($items as $item) {
             // Make groups extensible
