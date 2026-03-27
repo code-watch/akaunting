@@ -68536,6 +68536,10 @@ body{
   opacity: 1;
 }
 
+.group:hover .group-hover\:opacity-100{
+  opacity: 1;
+}
+
 @media (min-width: 640px){
 
   .sm\:absolute{

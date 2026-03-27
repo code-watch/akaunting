@@ -60,7 +60,7 @@ class AccountsTest extends FeatureTestCase
         $this->loginAs()
             ->patch(route('accounts.update', $account->id), $request)
             ->assertStatus(200)
-			->assertSee($request['name']);
+            ->assertSee($request['name']);
 
         $this->assertFlashLevel('success');
 

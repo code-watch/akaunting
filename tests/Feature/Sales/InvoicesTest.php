@@ -207,7 +207,7 @@ class InvoicesTest extends FeatureTestCase
         $this->loginAs()
             ->patch(route('invoices.update', $invoice->id), $request)
             ->assertStatus(200)
-			->assertSee($request['contact_email']);
+            ->assertSee($request['contact_email']);
 
         $this->assertFlashLevel('success');
 

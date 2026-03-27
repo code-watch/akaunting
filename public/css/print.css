@@ -427,8 +427,8 @@ html[dir='rtl'] .text-right
 
 .lines thead {
     -moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
 }
 
 
@@ -678,9 +678,9 @@ html[dir='rtl'] .text-right
 /*--Print Reports Finish--*/
 
 .clearfix:after {
-	display: block;
-	clear: both;
-	content: ""
+    display: block;
+    clear: both;
+    content: ""
 }
 
 .show-card {
