@@ -50,4 +50,16 @@ class ReportsTest extends FeatureTestCase
         $this->assertStringContainsString(trans_choice('general.totals', 1), $html);
         $this->assertStringNotContainsString('Undefined array key', $html);
     }
+
+    public function testItShouldRenderMoneyComponentWhenAmountIsEmptyString()
+    {
+        $html = view('money::components.money', [
+            'amount' => '',
+            'currency' => 'USD',
+            'convert' => false,
+        ])->render();
+
+        $this->assertNotEmpty($html);
+        $this->assertStringNotContainsString('Invalid amount', $html);
+    }
 }
