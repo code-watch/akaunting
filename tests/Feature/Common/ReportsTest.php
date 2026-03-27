@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Common;
 
+use App\Reports\ProfitLoss;
 use App\Models\Common\Report;
 use Tests\Feature\FeatureTestCase;
 
@@ -24,5 +25,29 @@ class ReportsTest extends FeatureTestCase
             ->assertOk()
             ->assertSeeText('Legacy Profit Loss')
             ->assertSeeText(trans('reports.net_profit'));
+    }
+
+    public function testItShouldRenderProfitLossFooterWhenIncomeTotalsAreMissing()
+    {
+        $report = new Report([
+            'class' => ProfitLoss::class,
+            'name' => 'Profit Loss Footer',
+            'description' => 'Footer regression coverage',
+            'settings' => ['group' => 'category', 'period' => 'quarterly', 'basis' => 'accrual'],
+        ]);
+
+        $class = new ProfitLoss($report, false);
+        $class->dates = ['Q1 2026', 'Q2 2026'];
+        $class->footer_totals = [
+            'expense' => ['Q1 2026' => 125],
+        ];
+
+        $html = view('reports.profit_loss.table.footer', [
+            'class' => $class,
+            'table_key' => 'income',
+        ])->render();
+
+        $this->assertStringContainsString(trans_choice('general.totals', 1), $html);
+        $this->assertStringNotContainsString('Undefined array key', $html);
     }
 }
