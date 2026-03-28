@@ -19,8 +19,9 @@ class AddIncomeExpenseCategories extends Listener
     public function handleFilterShowing(FilterShowing $event)
     {
         $classes = [
-            'App\Reports\IncomeExpenseSummary',
-            'App\Reports\DiscountSummary',
+            \App\Reports\DiscountSummary::class,
+            \App\Reports\IncomeExpenseSummary::class,
+            \App\Reports\ProfitLoss::class,
         ];
 
         if (empty($event->class) || !in_array(get_class($event->class), $classes)) {
@@ -29,7 +30,7 @@ class AddIncomeExpenseCategories extends Listener
 
         $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseCategoryTypes());
 
-        $event->class->filters['categories'] = $this->getIncomeExpenseCategories();
+        $event->class->filters['categories'] = $this->getIncomeExpenseCategories(limit: true);
         $event->class->filters['routes']['categories'] = ['categories.index', 'search=type:' . implode(',', $types) . ' enabled:1'];
         $event->class->filters['multiple']['categories'] = true;
     }
@@ -43,9 +44,9 @@ class AddIncomeExpenseCategories extends Listener
     public function handleGroupShowing(GroupShowing $event)
     {
         $classes = [
-            'App\Reports\IncomeExpenseSummary',
-            'App\Reports\ProfitLoss',
-            'App\Reports\DiscountSummary',
+            \App\Reports\IncomeExpenseSummary::class,
+            \App\Reports\ProfitLoss::class,
+            \App\Reports\DiscountSummary::class,
         ];
 
         if (empty($event->class) || !in_array(get_class($event->class), $classes)) {
