@@ -132,6 +132,8 @@ class ProfitLoss extends Report
     public function getFields(): array
     {
         return [
+            $this->getGroupField(),
+            $this->getPeriodField(),
             $this->getBasisField(),
             $this->getPercentageField(),
         ];
