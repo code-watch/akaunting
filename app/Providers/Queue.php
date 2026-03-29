@@ -51,7 +51,9 @@ class Queue extends Provider
             if (empty($company)) {
                 $event->job->delete();
 
-                throw new \Exception('Company not found. Payload: ' . json_encode($payload));
+                logger()->warning('Company not found, job deleted. Payload: ' . json_encode($payload));
+
+                return;
             }
 
             $company->makeCurrent();
