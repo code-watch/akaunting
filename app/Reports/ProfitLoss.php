@@ -5,6 +5,7 @@ namespace App\Reports;
 use App\Abstracts\Report;
 use App\Models\Banking\Transaction;
 use App\Models\Document\Document;
+use App\Utilities\Date;
 use App\Utilities\Recurring;
 
 class ProfitLoss extends Report
@@ -27,6 +28,7 @@ class ProfitLoss extends Report
         $this->views['detail.content.header'] = 'reports.profit_loss.content.header';
         $this->views['detail.content.footer'] = 'reports.profit_loss.content.footer';
         $this->views['detail.table.header'] = 'reports.profit_loss.table.header';
+        $this->views['detail.table.row'] = 'reports.profit_loss.table.row';
         $this->views['detail.table.footer'] = 'reports.profit_loss.table.footer';
     }
 
@@ -93,7 +95,7 @@ class ProfitLoss extends Report
         $this->setNetProfit();
     }
 
-    public function setNetProfit()
+    public function setNetProfit(): void
     {
         foreach ($this->footer_totals as $table => $dates) {
             foreach ($dates as $date => $total) {
@@ -125,5 +127,123 @@ class ProfitLoss extends Report
         $data['net_profit'] = $net_profit;
 
         return $data;
+    }
+
+    public function getFields(): array
+    {
+        return [
+            $this->getBasisField(),
+            $this->getPercentageField(),
+        ];
+    }
+
+    public function getPercentageField(): array
+    {
+        return [
+            'type'     => 'select',
+            'name'     => 'show_percentage',
+            'title'    => trans('reports.percentage_of_income'),
+            'icon'     => 'percent',
+            'values' => [
+                'yes' => trans('general.yes'),
+                'no' => trans('general.no'),
+            ],
+            'selected' => 'no',
+            'attributes' => [
+                'required' => 'required',
+            ],
+        ];
+    }
+
+    public function showPercentage(): bool
+    {
+        return $this->getSearchStringValue('show_percentage', $this->getSetting('show_percentage')) === 'yes';
+    }
+
+    public function getPercentageOfIncome(string $date, float|int $cell_value): ?string
+    {
+        if (! $this->showPercentage()) {
+            return null;
+        }
+
+        $income_total = $this->footer_totals['income'][$date] ?? 0;
+
+        if ($income_total == 0) {
+            return null;
+        }
+
+        $pct = round($cell_value / $income_total * 100, 1);
+
+        return setting('localisation.percent_position') == 'after'
+            ? $pct . '%'
+            : '%' . $pct;
+    }
+
+    public function getDrillDownUrl(string $date, int|string $id): string
+    {
+        [$date_start, $date_end] = $this->getDateRangeForDrillDown($date);
+
+        $group = $this->getGroup();
+
+        // category_id:519 paid_at>=2026-03-01 paid_at<=2026-03-29
+        $search = implode(
+            separator: ' ',
+            array: [
+                "{$group}_id:{$id}",
+                "paid_at>={$date_start}",
+                "paid_at<={$date_end}",
+            ],
+        );
+
+        return route('transactions.index') . '?list_records=all&search=' . $search;
+    }
+
+    private function getDateRangeForDrillDown(string $date): array
+    {
+        switch ($this->getPeriod()) {
+            case 'yearly':
+                $range = [
+                    trim($date) . '-01-01',
+                    trim($date) . '-12-31',
+                ];
+
+                break;
+            case 'quarterly':
+                [$d_start, $d_end] = array_map('trim', explode(' - ', $date, 2));
+
+                $range = [
+                    Date::createFromFormat('M Y', $d_start)->startOfMonth()->format('Y-m-d'),
+                    Date::createFromFormat('M Y', $d_end)->endOfMonth()->format('Y-m-d'),
+                ];
+
+                break;
+            case 'weekly':
+                [$d_start, $d_end] = array_map('trim', explode(' - ', $date, 2));
+
+                $range = [
+                    Date::createFromFormat('d M Y', $d_start)->startOfDay()->format('Y-m-d'),
+                    Date::createFromFormat('d M Y', $d_end)->endOfDay()->format('Y-m-d'),
+                ];
+
+                break;
+            default: // monthly
+                $range = [
+                    Date::createFromFormat('M Y', $date)->startOfMonth()->format('Y-m-d'),
+                    Date::createFromFormat('M Y', $date)->endOfMonth()->format('Y-m-d'),
+                ];
+
+                break;
+        }
+
+        // Clamp to report's start_date/end_date if present
+        $report_start = request('start_date');
+        $report_end = request('end_date');
+
+        if ($report_start && $report_end) {
+            $range[0] = max($range[0], $report_start);
+            $range[1] = min($range[1], $report_end);
+        }
+
+        return $range;
     }
 }

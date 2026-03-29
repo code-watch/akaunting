@@ -35,6 +35,8 @@ return [
     'pin_text' => [
         'unpin_report'              => 'Unpin your report',
         'pin_report'                => 'Pin your report',
-    ]
+    ],
+
+    'percentage_of_income'          => 'Show % of Income',
 
 ];
