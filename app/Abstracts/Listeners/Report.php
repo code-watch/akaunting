@@ -106,7 +106,7 @@ abstract class Report
 
     public function getIncomeExpenseCategories($limit = false)
     {
-        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseCategoryTypes());
+        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseAndCogsCategoryTypes());
 
         return $this->getCategories($types, $limit);
     }

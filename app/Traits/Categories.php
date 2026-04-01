@@ -22,6 +22,13 @@ trait Categories
         return in_array($type, $this->getExpenseCategoryTypes());
     }
 
+    public function isCogsCategory(): bool
+    {
+        $type = $this->type ?? $this->category->type ?? $this->model->type ?? Category::COGS_TYPE;
+
+        return in_array($type, $this->getCogsCategoryTypes());
+    }
+
     public function isItemCategory(): bool
     {
         $type = $this->type ?? $this->category->type ?? $this->model->type ?? Category::ITEM_TYPE;
@@ -43,7 +50,10 @@ trait Categories
                 $types = $this->getIncomeCategoryTypes($return);
                 break;
             case Category::EXPENSE_TYPE:
-                $types = $this->getExpenseCategoryTypes($return);
+                $types = $this->getExpenseAndCogsCategoryTypes($return);
+                break;
+            case Category::COGS_TYPE:
+                $types = $this->getCogsCategoryTypes($return);
                 break;
             case Category::ITEM_TYPE:
                 $types = $this->getItemCategoryTypes($return);
@@ -66,6 +76,18 @@ trait Categories
     public function getExpenseCategoryTypes(string $return = 'array'): string|array
     {
         return $this->getCategoryTypesByIndex(Category::EXPENSE_TYPE, $return);
+    }
+
+    public function getCogsCategoryTypes(string $return = 'array'): string|array
+    {
+        return $this->getCategoryTypesByIndex(Category::COGS_TYPE, $return);
+    }
+
+    public function getExpenseAndCogsCategoryTypes(string $return = 'array'): string|array
+    {
+        $types = array_merge($this->getExpenseCategoryTypes(), $this->getCogsCategoryTypes());
+
+        return ($return == 'array') ? $types : implode(',', $types);
     }
 
     public function getItemCategoryTypes(string $return = 'array'): string|array
@@ -93,6 +115,11 @@ trait Categories
     public function addExpenseCategoryType(string $new_type): void
     {
         $this->addCategoryType($new_type, Category::EXPENSE_TYPE);
+    }
+
+    public function addCogsCategoryType(string $new_type): void
+    {
+        $this->addCategoryType($new_type, Category::COGS_TYPE);
     }
 
     public function addItemCategoryType(string $new_type): void
