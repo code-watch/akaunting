@@ -148,6 +148,7 @@ class Event extends Provider
         \App\Listeners\Report\AddIncomeExpenseCategories::class,
         \App\Listeners\Report\AddSearchString::class,
         \App\Listeners\Report\AddRowsToTax::class,
+        \App\Listeners\Report\AddGroup::class,
         \App\Listeners\Report\AddBasis::class,
         \App\Listeners\Report\AddPeriod::class,
         \App\Listeners\Report\AddDate::class,
