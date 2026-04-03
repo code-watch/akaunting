@@ -20,7 +20,6 @@ class AddXHeader
         // Check if we should add header
         if (method_exists($response, 'header')) {
             $response->header('X-Akaunting', 'Online Accounting Software');
-
             $response->header('X-Content-Type-Options', 'nosniff');
             $response->header('X-Frame-Options', 'SAMEORIGIN');
             $response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
