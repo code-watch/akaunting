@@ -189,6 +189,10 @@ trait Categories
         $configs = empty($types) ? config('type.category') : array_intersect_key(config('type.category'), array_flip($types));
 
         foreach ($configs as $type => $attr) {
+            if (! is_array($attr)) {
+                continue;
+            }
+
             $plural_type = Str::plural($type);
 
             $name = $attr['translation']['prefix'] . '.' . $plural_type;
@@ -215,6 +219,10 @@ trait Categories
         $configs = config('type.category');
 
         foreach ($configs as $type => $attr) {
+            if (! is_array($attr)) {
+                continue;
+            }
+
             $tab_key = 'categories-' . ($attr['group'] ?? $type);
 
             if (isset($tabs[$tab_key])) {
