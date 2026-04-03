@@ -55,7 +55,7 @@
                             </div>
 
                             <div class="flex items-start ltr:space-x-2 rtl:space-x-reverse">
-                                <livewire:report.pin :categories="$categories" :report="$report" />
+                                <livewire:report.pin :report="$report" />
 
                                 @canany(['create-common-reports', 'update-common-reports', 'delete-common-reports'])
                                 <x-dropdown id="index-line-actions-report-{{ $category_id }}-{{ $report->id }}">
