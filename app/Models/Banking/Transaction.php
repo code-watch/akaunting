@@ -557,7 +557,7 @@ class Transaction extends Model
         } catch (\Exception $e) {}
 
         try {
-            if (! $this->reconciled && $this->isNotTransferTransaction()) {
+            if (! $this->reconciled && empty($this->document_id) && $this->isNotTransferTransaction()) {
                 $actions[] = [
                     'title' => trans('general.edit'),
                     'icon' => 'edit',
