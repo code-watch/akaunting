@@ -24,6 +24,10 @@ abstract class Report
         \App\Events\Report\RowsShowing::class,
     ];
 
+    // Prevent deprecated dynamic property warnings in PHP 8.2+ by explicitly declaring these properties
+    protected $class;
+    protected $group;
+
     public function skipThisClass($event)
     {
         $fire_event = $event;
@@ -106,7 +110,7 @@ abstract class Report
 
     public function getIncomeExpenseCategories($limit = false)
     {
-        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseCategoryTypes());
+        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseAndCogsCategoryTypes());
 
         return $this->getCategories($types, $limit);
     }

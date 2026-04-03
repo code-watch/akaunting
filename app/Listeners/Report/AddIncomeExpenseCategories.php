@@ -10,6 +10,12 @@ use App\Models\Setting\Category;
 
 class AddIncomeExpenseCategories extends Listener
 {
+    protected $classes = [
+        \App\Reports\DiscountSummary::class,
+        \App\Reports\IncomeExpenseSummary::class,
+        \App\Reports\ProfitLoss::class,
+    ];
+
     /**
      * Handle filter showing event.
      *
@@ -18,17 +24,11 @@ class AddIncomeExpenseCategories extends Listener
      */
     public function handleFilterShowing(FilterShowing $event)
     {
-        $classes = [
-            \App\Reports\DiscountSummary::class,
-            \App\Reports\IncomeExpenseSummary::class,
-            \App\Reports\ProfitLoss::class,
-        ];
-
-        if (empty($event->class) || !in_array(get_class($event->class), $classes)) {
+        if ($this->skipThisClass($event)) {
             return;
         }
 
-        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseCategoryTypes());
+        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseAndCogsCategoryTypes());
 
         $event->class->filters['categories'] = $this->getIncomeExpenseCategories(limit: true);
         $event->class->filters['routes']['categories'] = ['categories.index', 'search=type:' . implode(',', $types) . ' enabled:1'];
@@ -43,13 +43,7 @@ class AddIncomeExpenseCategories extends Listener
      */
     public function handleGroupShowing(GroupShowing $event)
     {
-        $classes = [
-            \App\Reports\IncomeExpenseSummary::class,
-            \App\Reports\ProfitLoss::class,
-            \App\Reports\DiscountSummary::class,
-        ];
-
-        if (empty($event->class) || !in_array(get_class($event->class), $classes)) {
+        if ($this->skipThisClass($event)) {
             return;
         }
 
@@ -64,15 +58,12 @@ class AddIncomeExpenseCategories extends Listener
      */
     public function handleRowsShowing(RowsShowing $event)
     {
-        if (
-            empty($event->class)
-            || empty($event->class->getGroup())
-            || ($event->class->getGroup() != 'category')
-        ) {
+        if ($this->skipRowsShowing($event, 'category')) {
             return;
         }
 
-        $categories = Category::type(array_merge($this->getIncomeCategoryTypes(), $this->getExpenseCategoryTypes()))->orderBy('name')->get();
+        $types = array_merge($this->getIncomeCategoryTypes(), $this->getExpenseAndCogsCategoryTypes());
+        $categories = Category::type($types)->orderBy('name')->get();
         $rows = $categories->pluck('name', 'id')->toArray();
 
         $this->setRowNamesAndValuesForCategories($event, $rows, $categories);
@@ -86,12 +77,12 @@ class AddIncomeExpenseCategories extends Listener
     {
         foreach ($event->class->dates as $date) {
             foreach ($event->class->tables as $table_key => $table_name) {
-                $table_keys = $table_key == Category::INCOME_TYPE ? $this->getIncomeCategoryTypes() : $this->getExpenseCategoryTypes();
+                $table_keys = $this->getCategoryTypesForTable($table_key);
 
                 foreach ($rows as $id => $name) {
                     $category = $categories->where('id', $id)->first();
 
-                    if (!in_array($category->type, $table_keys)) {
+                    if (! in_array($category->type, $table_keys)) {
                         continue;
                     }
 
@@ -105,17 +96,27 @@ class AddIncomeExpenseCategories extends Listener
     public function setTreeNodesForCategories($event, $nodes, $categories)
     {
         foreach ($event->class->tables as $table_key => $table_name) {
-            $table_keys = $table_key == Category::INCOME_TYPE ? $this->getIncomeCategoryTypes() : $this->getExpenseCategoryTypes();
+            $table_keys = $this->getCategoryTypesForTable($table_key);
 
             foreach ($nodes as $id => $node) {
                 $category = $categories->where('id', $id)->first();
 
-                if (!in_array($category->type, $table_keys)) {
+                if (! in_array($category->type, $table_keys)) {
                     continue;
                 }
 
                 $event->class->row_tree_nodes[$table_key][$id] = $node;
             }
         }
+    }
+
+    protected function getCategoryTypesForTable(string $table_key): array
+    {
+        return match ($table_key) {
+            Category::INCOME_TYPE  => $this->getIncomeCategoryTypes(),
+            Category::EXPENSE_TYPE => $this->getExpenseCategoryTypes(),
+            Category::COGS_TYPE    => $this->getCogsCategoryTypes(),
+            default                => $this->getExpenseCategoryTypes(),
+        };
     }
 }

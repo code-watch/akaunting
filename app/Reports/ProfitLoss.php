@@ -5,8 +5,10 @@ namespace App\Reports;
 use App\Abstracts\Report;
 use App\Models\Banking\Transaction;
 use App\Models\Document\Document;
+use App\Models\Setting\Category;
 use App\Utilities\Date;
 use App\Utilities\Recurring;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProfitLoss extends Report
 {
@@ -20,11 +22,14 @@ class ProfitLoss extends Report
 
     public $chart = false;
 
+    public $gross_profit = [];
+
     public $net_profit = [];
 
     public function setViews()
     {
         parent::setViews();
+        $this->views['detail'] = 'reports.profit_loss.detail';
         $this->views['detail.content.header'] = 'reports.profit_loss.content.header';
         $this->views['detail.content.footer'] = 'reports.profit_loss.content.footer';
         $this->views['detail.table.header'] = 'reports.profit_loss.table.header';
@@ -35,75 +40,117 @@ class ProfitLoss extends Report
     public function setTables()
     {
         $this->tables = [
-            'income' => trans_choice('general.incomes', 1),
-            'expense' => trans_choice('general.expenses', 2),
+            Category::INCOME_TYPE  => trans_choice('general.incomes', 1),
+            Category::COGS_TYPE    => trans_choice('general.cogs', 2),
+            Category::EXPENSE_TYPE => trans_choice('general.expenses', 2),
         ];
     }
 
     public function setData()
     {
-        $income_transactions = $this->applyFilters(
-            model: Transaction::with('recurring')->income()->isNotTransfer(),
-            args: ['date_field' => 'paid_at', 'model_type' => 'income'],
-        );
-        $expense_transactions = $this->applyFilters(
-            model: Transaction::with('recurring')->expense()->isNotTransfer(),
-            args: ['date_field' => 'paid_at', 'model_type' => 'expense'],
-        );
-
         switch ($this->getBasis()) {
             case 'cash':
+                $incomes_query = $this->getTransactionQuery(Transaction::INCOME_TYPE);
+                $expenses_query = $this->getTransactionQuery(Transaction::EXPENSE_TYPE);
+
                 // Incomes
-                $incomes = $income_transactions->get();
-                $this->setTotals($incomes, 'paid_at', false, 'income', false);
+                $incomes = $incomes_query->get();
+                $this->setTotals($incomes, 'paid_at', false, Category::INCOME_TYPE, false);
+
+                // COGS: Expenses
+                $cogs_expenses_query = clone $expenses_query; // To avoid affecting the original query used for non-COGS expenses
+                $cogs_expenses = $cogs_expenses_query->whereHas('category', fn (Builder $q) => $q->cogs())->get();
+                $this->setTotals($cogs_expenses, 'paid_at', false, Category::COGS_TYPE, false);
 
                 // Expenses
-                $expenses = $expense_transactions->get();
-                $this->setTotals($expenses, 'paid_at', false, 'expense', false);
+                $expenses = $expenses_query->whereDoesntHave('category', fn (Builder $q) => $q->cogs())->get();
+                $this->setTotals($expenses, 'paid_at', false, Category::EXPENSE_TYPE, false);
 
                 break;
             default:
+                $incomes_query = $this->getTransactionQuery(Transaction::INCOME_TYPE);
+                $expenses_query = $this->getTransactionQuery(Transaction::EXPENSE_TYPE);
+                $invoices_query = $this->getDocumentQuery(Document::INVOICE_TYPE);
+                $bills_query = $this->getDocumentQuery(Document::BILL_TYPE);
+
                 // Invoices
-                $invoices = $this->applyFilters(
-                    model: Document::invoice()->with('recurring', 'totals', 'transactions', 'items')->accrued(),
-                    args: ['date_field' => 'issued_at', 'model_type' => 'invoice'],
-                )->get();
+                $invoices = $invoices_query->get();
                 Recurring::reflect($invoices, 'issued_at');
-                $this->setTotals($invoices, 'issued_at', false, 'income', false);
+                $this->setTotals($invoices, 'issued_at', false, Category::INCOME_TYPE, false);
 
                 // Incomes
-                $incomes = $income_transactions->isNotDocument()->get();
+                $incomes = $incomes_query->isNotDocument()->get();
                 Recurring::reflect($incomes, 'paid_at');
-                $this->setTotals($incomes, 'paid_at', false, 'income', false);
+                $this->setTotals($incomes, 'paid_at', false, Category::INCOME_TYPE, false);
+
+                // COGS: Bills
+                $cogs_bills_query = clone $bills_query; // To avoid affecting the original query used for non-COGS bills
+                $cogs_bills = $cogs_bills_query->whereHas('category', fn (Builder $q) => $q->cogs())->get();
+                Recurring::reflect($cogs_bills, 'issued_at');
+                $this->setTotals($cogs_bills, 'issued_at', false, Category::COGS_TYPE, false);
+
+                // COGS: Expenses
+                $cogs_expenses_query = clone $expenses_query; // To avoid affecting the original query used for non-COGS expenses
+                $cogs_expenses = $cogs_expenses_query->whereHas('category', fn (Builder $q) => $q->cogs())->get();
+                Recurring::reflect($cogs_expenses, 'paid_at');
+                $this->setTotals($cogs_expenses, 'paid_at', false, Category::COGS_TYPE, false);
 
                 // Bills
-                $bills = $this->applyFilters(
-                    model: Document::bill()->with('recurring', 'totals', 'transactions', 'items')->accrued(),
-                    args: ['date_field' => 'issued_at', 'model_type' => 'bill'],
-                )->get();
+                $bills = $bills_query->whereDoesntHave('category', fn (Builder $q) => $q->cogs())->get();
                 Recurring::reflect($bills, 'issued_at');
-                $this->setTotals($bills, 'issued_at', false, 'expense', false);
+                $this->setTotals($bills, 'issued_at', false, Category::EXPENSE_TYPE, false);
 
                 // Expenses
-                $expenses = $expense_transactions->isNotDocument()->get();
+                $expenses = $expenses_query->whereDoesntHave('category', fn (Builder $q) => $q->cogs())->get();
                 Recurring::reflect($expenses, 'paid_at');
-                $this->setTotals($expenses, 'paid_at', false, 'expense', false);
+                $this->setTotals($expenses, 'paid_at', false, Category::EXPENSE_TYPE, false);
 
                 break;
         }
 
+        $this->setGrossProfit();
         $this->setNetProfit();
+    }
+
+    public function getTransactionQuery(string $type): Builder
+    {
+        return $this->applyFilters(
+            model: Transaction::with('recurring')->$type()->isNotTransfer(),
+            args: ['date_field' => 'paid_at', 'model_type' => $type],
+        );
+    }
+
+    public function getDocumentQuery(string $type): Builder
+    {
+        return $this->applyFilters(
+            model: Document::with('recurring', 'totals', 'transactions', 'items')->$type()->accrued(),
+            args: ['date_field' => 'issued_at', 'model_type' => $type],
+        );
+    }
+
+    public function setGrossProfit(): void
+    {
+        foreach ($this->dates as $date) {
+            $income = $this->footer_totals[Category::INCOME_TYPE][$date] ?? 0;
+            $cogs = $this->footer_totals[Category::COGS_TYPE][$date] ?? 0;
+
+            $this->gross_profit[$date] = $income - $cogs;
+        }
     }
 
     public function setNetProfit(): void
     {
         foreach ($this->footer_totals as $table => $dates) {
+            if (! in_array($table, [Category::INCOME_TYPE, Category::EXPENSE_TYPE])) {
+                continue;
+            }
+
             foreach ($dates as $date => $total) {
-                if (!isset($this->net_profit[$date])) {
+                if (! isset($this->net_profit[$date])) {
                     $this->net_profit[$date] = 0;
                 }
 
-                if ($table == 'income') {
+                if ($table == Category::INCOME_TYPE) {
                     $this->net_profit[$date] += $total;
 
                     continue;
@@ -119,11 +166,14 @@ class ProfitLoss extends Report
         $data = parent::array();
 
         $net_profit = $this->net_profit;
+        $gross_profit = $this->gross_profit;
 
         if ($this->has_money) {
-            $net_profit = array_map(fn($value) => money($value)->format(), $net_profit);
+            $net_profit = array_map(fn ($value) => money($value)->format(), $net_profit);
+            $gross_profit = array_map(fn ($value) => money($value)->format(), $gross_profit);
         }
 
+        $data['gross_profit'] = $gross_profit;
         $data['net_profit'] = $net_profit;
 
         return $data;

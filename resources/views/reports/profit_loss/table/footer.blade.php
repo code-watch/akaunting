@@ -10,7 +10,7 @@
 <tfoot>
     <tr>
         <td class="{{ $class->column_name_width }} w-24 py-4 ltr:text-left rtl:text-right text-black-400 font-bold uppercase">
-            {{ trans_choice('general.totals', 1) }}
+            {{ trans('reports.total_' . $table_key) }}
         </td>
 
         @foreach($totals as $total)
