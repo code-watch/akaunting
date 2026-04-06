@@ -71,6 +71,10 @@ class CategoriesTest extends FeatureTestCase
     {
         $request = $this->getRequest();
 
+        $this->dispatch(new CreateCategory(array_merge($request, [
+            'name' => $this->faker->text(15),
+        ])));
+
         $category = $this->dispatch(new CreateCategory($request));
 
         $this->loginAs()
