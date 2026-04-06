@@ -4,12 +4,12 @@
             <span class="material-icons-outlined text-base font-bold ltr:mr-1 rtl:ml-1">add</span>
              {{ addItemText }}
         </button>
- 
+
         <div :class="[{'is-open': show.item_list}]" tabindex="-1">
             <div class="-mt-10.5 left-0 right-0 bg-white border rounded-lg" v-if="show.item_list">
                <div class="relative">
                    <span class="material-icons-round absolute left-4 top-3 text-lg">search</span>
-                   <input 
+                   <input
                        type="text"
                        data-input="true"
                        class="w-full text-sm py-2.5 mt-1 border text-black placeholder-light-gray bg-white disabled:bg-gray-200 focus:outline-none focus:ring-transparent focus:border-purple px-10 border-t-0 border-l-0 border-r-0 border-gray-200 rounded-none"
@@ -25,7 +25,7 @@
 
                 <div v-bind:class="(sortedItems.length > 7) ? 'h-72 overflow-y-auto' : ''">
                     <ul class="w-full text-sm rounded-lg border-light-gray text-black placeholder-light-gray bg-white disabled:bg-gray-200 focus:outline-none focus:ring-transparent focus:border-purple p-0 mt-0 border-0 cursor-pointer">
-                        <div 
+                        <div
                             class="hover:bg-gray-100 px-4" 
                             v-for="(item, index) in sortedItems" 
                             :key="index" 
@@ -35,7 +35,7 @@
                             <div class="w-full flex items-center justify-between">
                                 <span>{{ item.name }}</span>
 
-                                <money 
+                                <money
                                     :name="'item-id-' + item.id"
                                     :value="item.price"
                                     v-bind="money"
@@ -198,6 +198,7 @@ export default {
             item_list: [],
             selected_items: [],
             search_list_key: this.searchListKey,
+            useRemoteResultSet: false,
             changeBackground: true,
             search: '', // search column model
             show: {
@@ -248,6 +249,7 @@ export default {
     methods: {
         setItemList(items) {
             this.item_list = [];
+            this.useRemoteResultSet = false;
 
             this.search.length === 0 ? this.isItemMatched = false : {}
 
@@ -331,6 +333,8 @@ export default {
 
                         this.item_list.push(list_item);
                     }, this);
+
+                    this.useRemoteResultSet = true;
                 })
                 .catch(error => {});
         },
@@ -486,6 +490,14 @@ export default {
                 // names must be equal
                 return 0;
             });
+
+            // Remote endpoint already filters by the query (including custom fields).
+            // Re-filtering by local text keys can hide valid backend matches.
+            if (this.useRemoteResultSet) {
+                this.useRemoteResultSet = false;
+
+                return this.item_list;
+            }
 
             const sortedItemList = this.item_list.filter((item, index, items) => {
                 if (typeof this.search_list_key === 'string') {

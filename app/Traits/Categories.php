@@ -193,20 +193,26 @@ trait Categories
                 continue;
             }
 
-            $plural_type = Str::plural($type);
+            if (is_callable($attr['translation']['type'] ?? null)) {
+                $name = $attr['translation']['type']();
+            } else {
+                $plural_type = Str::plural($type);
 
-            $name = $attr['translation']['prefix'] . '.' . $plural_type;
+                $name = $attr['translation']['prefix'] . '.' . $plural_type;
 
-            if (!empty($attr['alias'])) {
-                $name = $attr['alias'] . '::' . $name;
+                if (!empty($attr['alias'])) {
+                    $name = $attr['alias'] . '::' . $name;
+                }
+
+                $name = $translate ? trans_choice($name, 1) : $name;
             }
 
             if ($group) {
                 $group_key = $attr['group'] ?? $type;
 
-                $category_types[$group_key][$type] = $translate ? trans_choice($name, 1) : $name;
+                $category_types[$group_key][$type] = $name;
             } else {
-                $category_types[$type] = $translate ? trans_choice($name, 1) : $name;
+                $category_types[$type] = $name;
             }
         }
 
@@ -249,17 +255,29 @@ trait Categories
                 continue;
             }
 
-            $plural_type = Str::plural($attr['group'] ?? $type);
+            if (! empty($attr['translation']['group'])) {
+                if (is_callable($attr['translation']['group'])) {
+                    $name = $attr['translation']['group']();
+                } elseif (is_array($attr['translation']['group'])) {
+                    $name = trans_choice($attr['translation']['group'][0], $attr['translation']['group'][1]);
+                } else {
+                    $name = trans($attr['translation']['group']);
+                }
+            } else {
+                $plural_type = Str::plural($attr['group'] ?? $type);
 
-            $name = $attr['translation']['prefix'] . '.' . $plural_type;
+                $name = $attr['translation']['prefix'] . '.' . $plural_type;
 
-            if (!empty($attr['alias'])) {
-                $name = $attr['alias'] . '::' . $name;
+                if (! empty($attr['alias'])) {
+                    $name = $attr['alias'] . '::' . $name;
+                }
+
+                $name = trans_choice($name, 2);
             }
 
             $tabs[$tab_key] = [
                 'key' => $type,
-                'name' => trans_choice($name, 2),
+                'name' => $name,
                 'show_code' => $attr['show_code'] ?? false,
             ];
         }
