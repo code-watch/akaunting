@@ -82,6 +82,22 @@ class CategoriesTest extends FeatureTestCase
         $this->assertSoftDeleted('categories', $request);
     }
 
+    public function testItShouldShowTranslatedCategoryTypeWhenDeletingLastCogsCategory()
+    {
+        $category = Category::factory()->enabled()->cogs()->create();
+
+        $this->loginAs()
+            ->delete(route('categories.destroy', $category->id))
+            ->assertStatus(200)
+            ->assertJson([
+                'success' => false,
+                'error' => true,
+                'message' => trans('messages.error.last_category', ['type' => '<b>cost of sales</b>']),
+            ]);
+
+        $this->assertFlashLevel('danger');
+    }
+
     public function getRequest()
     {
         return Category::factory()->enabled()->raw();

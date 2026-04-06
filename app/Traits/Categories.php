@@ -213,6 +213,25 @@ trait Categories
         return $category_types;
     }
 
+    public function getCategoryTypeLabel(string $type, int $count = 1): string
+    {
+        $config = config('type.category.' . $type, []);
+
+        if (empty($config)) {
+            return $type;
+        }
+
+        $group = $config['group'] ?? $type;
+        $plural_type = $count === 1 ? Str::plural($group, 1) : Str::plural($group);
+        $name = ($config['translation']['prefix'] ?? 'general') . '.' . $plural_type;
+
+        if (! empty($config['alias'])) {
+            $name = $config['alias'] . '::' . $name;
+        }
+
+        return trans_choice($name, $count);
+    }
+
     public function getCategoryTabs(): array
     {
         $tabs = [];
