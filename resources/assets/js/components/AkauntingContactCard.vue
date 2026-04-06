@@ -659,8 +659,9 @@ export default {
                 return 0;
             });
 
+            // Keep legacy local label filtering behavior for backward compatibility.
             return this.contact_list.filter(contact => {
-                return contact.value.toLowerCase().includes(this.search.toLowerCase())
+                return (contact.value || '').toLowerCase().includes(this.search.toLowerCase());
             });
         },
     },
