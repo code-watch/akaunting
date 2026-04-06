@@ -517,7 +517,20 @@ class Document extends Model
 
     public function getTemplatePathAttribute($value = null)
     {
-        return $value ?: 'sales.invoices.print_' . setting('invoice.template');
+        if ($value) {
+            // Allow only safe view-path characters: alphanumeric, dots, underscores
+            if (! preg_match('/^[a-zA-Z0-9._]+$/', $value)) {
+                $value = null;
+            }
+        }
+
+        if (! $value) {
+            // Sanitize the template identifier from settings to alphanumeric + underscores only
+            $template = preg_replace('/[^a-zA-Z0-9_]/', '', (string) setting('invoice.template')) ?: 'default';
+            $value = 'sales.invoices.print_' . $template;
+        }
+
+        return $value;
     }
 
     public function getContactLocationAttribute()
