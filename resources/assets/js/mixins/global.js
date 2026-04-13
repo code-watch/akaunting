@@ -867,7 +867,18 @@ export default {
             this.onChangeCurrency(currency_code);
 
             this.$forceUpdate();
-        },
+
+            window.axios.get(url + '/common/contacts/' + contact.id + '/category')
+                .then(response => {
+                    if (response.data && response.data.category_id) {
+                        this.form.category_id = response.data.category_id;
+                    }
+
+                    this.$forceUpdate();
+                })
+                .catch(error => {
+                });
+    },
 
         async onAddPayment(url) {
             let payment = {

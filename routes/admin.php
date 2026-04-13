@@ -50,6 +50,7 @@ Route::group(['prefix' => 'common'], function () {
     Route::resource('reports', 'Common\Reports');
 
     Route::get('contacts/index', 'Common\Contacts@index')->name('contacts.index');
+    Route::get('contacts/{contact}/category', 'Common\Contacts@category')->name('contacts.category');
 
     Route::get('plans/check', 'Common\Plans@check')->name('plans.check');
 });

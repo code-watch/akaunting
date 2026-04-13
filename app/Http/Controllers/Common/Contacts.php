@@ -30,4 +30,11 @@ class Contacts extends Controller
             'message'   => '',
         ]);
     }
+
+    public function category(Contact $contact)
+    {
+        return response()->json([
+            'category_id' => $contact->category_id ?? null,
+        ]);
+    }
 }

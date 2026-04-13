@@ -43,7 +43,23 @@ const app = new Vue({
     },
 
     methods: {
-        //
+        onChangeContact(contact_id) {
+            if (!contact_id) {
+                return;
+            }
+
+            window.axios.get(url + '/common/contacts/' + contact_id + '/category')
+                .then(response => {
+                    if (response.data && response.data.category_id) {
+                        this.form.category_id = response.data.category_id;
+
+                        this.$forceUpdate();
+                    }
+                })
+                .catch(error => {
+                });
+        },
+
         onChangeTax(tax_id) {
             if (tax_id == undefined || ! tax_id.length) {
                 this.tax_summary = false;

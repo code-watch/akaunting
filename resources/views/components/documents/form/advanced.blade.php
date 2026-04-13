@@ -20,10 +20,10 @@
 
             @if (! $hideCategory)
                 <div class="{{ $classCategory }}">
-                    <x-form.group.category :type="$typeCategory" :selected="$categoryId" />
+                    <x-form.group.category :type="$typeCategory" :selected="$categoryId" model="form.category_id" />
                 </div>
             @else
-                <x-form.input.hidden name="category_id" :value="$categoryId" />
+                <x-form.input.hidden name="category_id" :value="$categoryId" v-model="form.category_id" />
             @endif
 
             @stack('attachment_end')
@@ -41,12 +41,12 @@
                     :options="$templates"
                     :selected="$template"
                     option-style="height: 6rem;"
-                    form-group-class="sm:col-span-4" 
+                    form-group-class="sm:col-span-4"
                 >
                     <template #option="{option}">
                         <span class="w-full flex h-16 items-center">
                             <img :src="option.option.image" class="h-20 my-3" :alt="option.option.name" />
-                            
+
                             <div class="flex flex-col text-black text-sm font-medium ml-2 sm:ml-4">
                                 <span>@{{ option.option.name }}</span>
                             </div>
