@@ -23,6 +23,12 @@ return new class extends Migration
 
             $table->index('category_id');
         });
+
+        Schema::table('contacts', function (Blueprint $table) {
+            $table->unsignedInteger('category_id')->nullable()->after('user_id');
+
+            $table->index('category_id');
+        });
     }
 
     /**
@@ -38,6 +44,11 @@ return new class extends Migration
         });
 
         Schema::table('document_items', function (Blueprint $table) {
+            $table->dropIndex(['category_id']);
+            $table->dropColumn('category_id');
+        });
+
+        Schema::table('contacts', function (Blueprint $table) {
             $table->dropIndex(['category_id']);
             $table->dropColumn('category_id');
         });
