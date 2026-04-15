@@ -518,8 +518,8 @@ class Document extends Model
     public function getTemplatePathAttribute($value = null)
     {
         if ($value) {
-            // Allow only safe view-path characters: alphanumeric, dots, underscores
-            if (! preg_match('/^[a-zA-Z0-9._]+$/', $value)) {
+            // Allow safe view-path characters: alphanumeric, dots, underscores, colons (for module views like module::view.path), hyphens
+            if (! preg_match('/^[a-zA-Z0-9._:\-]+$/', $value)) {
                 $value = null;
             }
         }
