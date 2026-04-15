@@ -27,6 +27,7 @@ class DocumentItem extends Model
         'type',
         'document_id',
         'item_id',
+        'category_id',
         'name',
         'description',
         'quantity',
@@ -72,6 +73,11 @@ class DocumentItem extends Model
     public function item()
     {
         return $this->belongsTo('App\Models\Common\Item')->withDefault(['name' => trans('general.na')]);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo('App\Models\Setting\Category');
     }
 
     public function taxes()
