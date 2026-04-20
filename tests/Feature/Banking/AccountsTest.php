@@ -94,6 +94,47 @@ class AccountsTest extends FeatureTestCase
             ->assertSee($account->name);
     }
 
+    public function testItShouldReturnMinimalCurrencyPayloadForAccount()
+    {
+        $request = $this->getRequest();
+
+        $account = $this->dispatch(new CreateAccount($request));
+
+        $response = $this->loginAs()
+            ->get(route('accounts.currency', ['account_id' => $account->id]))
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'id',
+                'currency_name',
+                'currency_code',
+                'currency_rate',
+                'thousands_separator',
+                'decimal_mark',
+                'precision',
+                'symbol_first',
+                'symbol',
+            ]);
+
+        $response->assertJsonMissingPath('balance');
+        $response->assertJsonMissingPath('title');
+        $response->assertJsonMissingPath('initials');
+
+        $this->assertSame(
+            [
+                'id',
+                'currency_name',
+                'currency_code',
+                'currency_rate',
+                'thousands_separator',
+                'decimal_mark',
+                'precision',
+                'symbol_first',
+                'symbol',
+            ],
+            array_keys($response->json())
+        );
+    }
+
     public function getRequest()
     {
         return Account::factory()->enabled()->raw();
