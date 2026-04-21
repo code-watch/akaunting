@@ -411,13 +411,23 @@ class Transaction extends Model
      */
     public function getTypeTitleAttribute($value)
     {
+        if ($value) {
+            return $value;
+        }
+
+        $translation = config('type.transaction.' . $this->type . '.translation.transactions');
+
+        if (! empty($translation)) {
+            return trans_choice($translation, 1);
+        }
+
         $type = $this->getRealTypeOfRecurringTransaction($this->type);
         $type = $this->getRealTypeOfTransferTransaction($type);
         $type = $this->getRealTypeOfSplitTransaction($type);
 
         $type = str_replace('-', '_', $type);
 
-        return $value ?? trans_choice('general.' . Str::plural($type), 1);
+        return trans_choice('general.' . Str::plural($type), 1);
     }
 
     /**

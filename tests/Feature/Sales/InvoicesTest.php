@@ -4,6 +4,8 @@ namespace Tests\Feature\Sales;
 
 use App\Exports\Sales\Invoices\Invoices as Export;
 use App\Jobs\Document\CreateDocument;
+use App\Models\Common\Contact;
+use App\Models\Common\ContactPerson;
 use App\Models\Document\Document;
 use App\Notifications\Sale\Invoice as Notification;
 use Illuminate\Http\UploadedFile;
@@ -22,6 +24,48 @@ class InvoicesTest extends FeatureTestCase
             ->get(route('invoices.index'))
             ->assertStatus(200)
             ->assertSeeText(trans_choice('general.invoices', 2));
+    }
+
+    public function testItShouldPreloadCustomerEmailCountOnInvoiceListPage()
+    {
+        $this->loginAs();
+
+        $customers = Contact::factory()->customer()->count(3)->create([
+            'company_id' => $this->company->id,
+        ]);
+
+        foreach ($customers as $customer) {
+            ContactPerson::create([
+                'company_id' => $this->company->id,
+                'type' => 'customer',
+                'contact_id' => $customer->id,
+                'name' => 'Contact Person',
+                'email' => 'customer' . $customer->id . '@example.com',
+                'phone' => '123-456-7890',
+            ]);
+
+            Document::factory()->invoice()->create([
+                'company_id' => $this->company->id,
+                'contact_id' => $customer->id,
+            ]);
+        }
+
+        $this->get(route('invoices.index'))
+            ->assertStatus(200)
+            ->assertViewHas('invoices', function ($invoices) {
+                foreach ($invoices as $invoice) {
+                    if (! $invoice->contact) {
+                        continue;
+                    }
+
+                    $this->assertTrue(
+                        isset($invoice->contact->contact_persons_with_email_count),
+                        'Invoice list should preload contact_persons_with_email_count for customer contacts.'
+                    );
+                }
+
+                return true;
+            });
     }
 
     public function testItShouldSeeInvoiceShowPage()
