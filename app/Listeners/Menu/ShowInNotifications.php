@@ -42,11 +42,14 @@ class ShowInNotifications
             foreach ($updates as $key => $update) {
                 $prefix = ($key == 'core') ? 'core' : 'module';
 
-                if ($prefix == 'module' && ! module($key)) {
+                // Resolve module once per iteration to avoid redundant lookups.
+                $module = ($prefix === 'module') ? module($key) : null;
+
+                if ($prefix === 'module' && ! $module) {
                     continue;
                 }
 
-                $name = ($prefix == 'core') ? 'Akaunting' : module($key)?->getName();
+                $name = ($prefix === 'core') ? 'Akaunting' : $module->getName();
 
                 $new = new Notification();
                 $new->id = $key;
