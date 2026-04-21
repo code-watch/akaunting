@@ -65,9 +65,10 @@ class ShowInNotifications
 
         // New app notifications
         $new_apps = $this->getNotifications('new-apps');
+         $read_notifications = (array) setting('notifications.' . user()->id, []);
 
         foreach ($new_apps as $key => $new_app) {
-            if (setting('notifications.' . user()->id . '.' . $new_app->alias)) {
+            if (! empty($read_notifications[$new_app->alias])) {
                 unset($new_apps[$key]);
 
                 continue;
