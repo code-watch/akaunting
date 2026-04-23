@@ -329,6 +329,20 @@ class Transaction extends Model
     }
 
     /**
+     * Get the payment method title.
+     *
+     * @return string
+     */
+    public function getPaymentMethodTitleAttribute()
+    {
+        $payment_method = $this->payment_method;
+
+        $payment_methods = \App\Utilities\Modules::getPaymentMethods('all');
+
+        return $payment_methods[$payment_method] ?? $payment_method;
+    }
+
+    /**
      * Convert amount to double.
      *
      * @return float
