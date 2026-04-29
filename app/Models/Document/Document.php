@@ -530,6 +530,20 @@ class Document extends Model
             $value = 'sales.invoices.print_' . $template;
         }
 
+        /* The above validation ensures that $value is a safe view path. We can now check if the view exists.
+         * If the view doesn't exist, we can fall back to the default template.
+         *
+        if (! empty($value) && view()->exists($value)) {
+            return $value;
+        }
+
+        if (! empty($this->template) && view()->exists('sales.invoices.print_' . $this->template)) {
+            return 'sales.invoices.print_' . $this->template;
+        }
+
+        return 'sales.invoices.print_' . setting('invoice.template');
+        */
+
         return $value;
     }
 

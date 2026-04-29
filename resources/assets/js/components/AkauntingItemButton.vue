@@ -8,8 +8,8 @@
         <div :class="[{'is-open': show.item_list}]" tabindex="-1">
             <div class="-mt-10.5 left-0 right-0 bg-white border rounded-lg" v-if="show.item_list">
                <div class="relative">
-                   <span class="material-icons-round absolute left-4 top-3 text-lg">search</span>
-                   <input
+                   <span class="material-icons-round absolute ltr:left-4 rtl:right-4 top-3 text-lg">search</span>
+                   <input 
                        type="text"
                        data-input="true"
                        class="w-full text-sm py-2.5 mt-1 border text-black placeholder-light-gray bg-white disabled:bg-gray-200 focus:outline-none focus:ring-transparent focus:border-purple px-10 border-t-0 border-l-0 border-r-0 border-gray-200 rounded-none"
@@ -57,8 +57,8 @@
                 </div>
 
                 <div class="flex items-center justify-center h-11 text-center text-purple font-bold border border-l-0 border-r-0 border-b-0 rounded-bl-lg rounded-br-lg hover:bg-gray-100 cursor-pointer" @click="onItemCreate">
-                     <span class="material-icons text-lg font-bold mr-1">add</span>
-                     {{ createNewItemText }}
+                    <span class="material-icons text-lg font-bold ltr:mr-1 rtl:ml-1">add</span>
+                    {{ createNewItemText }}
                 </div>
             </div>
         </div>
