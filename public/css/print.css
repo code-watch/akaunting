@@ -1067,13 +1067,13 @@ html[dir="rtl"] .print-heading {
     }
 }
 
-/* RTL table column mirror: DomPDF-only (DomPDF does not support @supports, so it applies these) */
+/* DomPDF: direction:rtl on <html> already handles column order in DomPDF.
+   Transforms are NOT applied here — they interfere with DomPDF width computation. */
 html[dir="rtl"] .lines,
 html[dir="rtl"] .modern-lines,
 html[dir="rtl"] .c-lines {
     transform: scaleX(-1);
     width: 100% !important;
-    table-layout: fixed;
 }
 
 html[dir="rtl"] .font-semibold {
@@ -1089,23 +1089,17 @@ html[dir="rtl"] .c-lines th {
     transform: scaleX(-1);
 }
 
-/* Browser override: direction:rtl handles column order natively; restore original column widths */
+/* Browsers: direction:rtl alone may not reverse column order in all browsers,
+   so scaleX(-1) on the table mirrors columns, and scaleX(-1) on cells un-mirrors text. */
 @supports (display: flex) {
     html[dir="rtl"] .lines,
     html[dir="rtl"] .modern-lines,
     html[dir="rtl"] .c-lines {
         transform: scaleX(1);
-        table-layout: auto;
     }
 
     html[dir="rtl"] .font-semibold {
         font-weight: 600;
-    }
-
-    html[dir="rtl"] .lines .item,
-    html[dir="rtl"] .modern-lines .item,
-    html[dir="rtl"] .c-lines .item {
-        width: 40%;
     }
 
     html[dir="rtl"] .lines td,
@@ -1115,6 +1109,20 @@ html[dir="rtl"] .c-lines th {
     html[dir="rtl"] .c-lines td,
     html[dir="rtl"] .c-lines th {
         transform: scaleX(1);
+    }
+}
+
+/* DomPDF fix: .col-100 { display: inline-block } causes shrink-wrap in DomPDF.
+   Column widths (40+10+20+20=90%) become the table width instead of the container.
+   display:block ensures DomPDF uses the parent container as the reference,
+   then scales columns proportionally to fill 100%. */
+html[dir="rtl"] .col-100 {
+    display: block;
+}
+
+@supports (display: flex) {
+    html[dir="rtl"] .col-100 {
+        display: inline-block;
     }
 }
 

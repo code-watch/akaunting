@@ -68546,9 +68546,11 @@ html[dir="rtl"] .el-select-dropdown.is-multiple .el-select-dropdown__item.select
 .group\/tooltip:hover .group-hover\/tooltip\:opacity-100{
   opacity: 1;
 }
+
 .group:hover .group-hover\:opacity-100{
   opacity: 1;
 }
+
 @media (min-width: 640px){
 
   .sm\:absolute{

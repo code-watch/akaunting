@@ -47,7 +47,7 @@
                     @stack('company_address_input_start')
                     @if (! $hideCompanyAddress)
                         <p class="text-white">
-                            {!! nl2br(setting('company.address')) !!}
+                            <x-nl2br :value="setting('company.address')" />
                             {!! $document->company->location !!}
                         </p>
                     @endif
@@ -122,7 +122,7 @@
                 @stack('address_input_start')
                     @if (! $hideContactAddress)
                         <p>
-                            {!! nl2br($document->contact_address) !!}
+                            <x-nl2br :value="$document->contact_address" />
                             @if ($document->contact_location)
                                 <br/>
                                 {!! $document->contact_location !!}
@@ -315,7 +315,7 @@
                             {{ trans_choice('general.notes', 2) }}
                         </p>
 
-                        {!! nl2br($document->notes) !!}
+                        <x-nl2br :value="$document->notes" />
                     @endif
                 @stack('notes_input_end')
             </div>
@@ -377,7 +377,7 @@
                 <div class="col-100 py-top p-modern" style="background-color:{{ $backgroundColor }} !important; -webkit-print-color-adjust: exact;">
                     <div class="text ltr:pl-2 rtl:pr-2">
                         <span class="text-white font-bold">
-                            {!! nl2br($document->footer) !!}
+                            <x-nl2br :value="$document->footer" />
                         </span>
                     </div>
                 </div>

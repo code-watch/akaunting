@@ -290,6 +290,7 @@ export default {
             selected_operator: [],
             selected_values: [],
             values: [],
+            useRemoteSearchValues: false,
             multiple_values: [],
             current_operator: '',
             current_value: null,
@@ -432,6 +433,7 @@ export default {
                     }, this);
 
                     this.option_values[value] = this.values;
+                    this.useRemoteSearchValues = true;
                 })
                 .catch(error => {
 
@@ -487,7 +489,7 @@ export default {
 
                     date_range_path += sign + 'start_date=' + dates[0];
                     date_range_path += '&end_date=' + (dates[1] ? dates[1] : dates[0]);
-                    
+
                     return;
                 }
 
@@ -652,6 +654,7 @@ export default {
                 }, this);
 
                 this.option_values[value] = this.values;
+                this.useRemoteSearchValues = false;
             })
             .catch(error => {
 
@@ -1222,6 +1225,13 @@ export default {
                 // names must be equal
                 return 0;
             });
+
+            // Remote endpoint already filtered by search query - skip local re-filter.
+            if (this.useRemoteSearchValues) {
+                this.useRemoteSearchValues = false;
+
+                return this.values;
+            }
 
             return this.values.filter(value => {
                 return value.value.toLowerCase().includes(this.search.toLowerCase());
