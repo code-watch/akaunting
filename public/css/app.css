@@ -67487,6 +67487,14 @@ html[dir="rtl"] .el-color-picker--mini {
     top: 54%;
 }
 
+html[dir="rtl"] .el-select .el-select__tags {
+    padding-right: 6px !important;
+}
+
+html[dir="rtl"] .el-select .el-tag__close.el-icon-close {
+    right: 0 !important;
+}
+
 /* Country select with flag icon: offset tags to avoid overlap with flag */
 .el-select-tags-pl-38 .el-select__tags {
     padding-left: 38px;
@@ -67729,7 +67737,10 @@ html[dir="rtl"] .un-el-select {
 
 /* Toggle YES/NO buttons: maintain consistent left-to-right order in RTL mode */
 html[dir="rtl"] .toggle-group {
-    flex-direction: row-reverse;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: reverse;
+        -ms-flex-direction: row-reverse;
+            flex-direction: row-reverse;
 }
 
 html[dir="rtl"] .el-scrollbar__wrap {
@@ -68546,11 +68557,9 @@ html[dir="rtl"] .el-select-dropdown.is-multiple .el-select-dropdown__item.select
 .group\/tooltip:hover .group-hover\/tooltip\:opacity-100{
   opacity: 1;
 }
-
 .group:hover .group-hover\:opacity-100{
   opacity: 1;
 }
-
 @media (min-width: 640px){
 
   .sm\:absolute{

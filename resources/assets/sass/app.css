@@ -394,6 +394,14 @@ html[dir="rtl"] .el-color-picker--mini {
     top: 54%;
 }
 
+html[dir="rtl"] .el-select .el-select__tags {
+    padding-right: 6px !important;
+}
+
+html[dir="rtl"] .el-select .el-tag__close.el-icon-close {
+    right: 0 !important;
+}
+
 /* Country select with flag icon: offset tags to avoid overlap with flag */
 .el-select-tags-pl-38 .el-select__tags {
     padding-left: 38px;
